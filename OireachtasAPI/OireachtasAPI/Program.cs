@@ -1,111 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
+﻿using System.Configuration;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using OireachtasAPI.Commands;
+using OireachtasAPI.Services;
+using OireachtasAPI.Services.LoadData;
+using Serilog;
+using Spectre.Console.Cli;
+using Spectre.Console.Cli.Extensions.DependencyInjection;
 
 namespace OireachtasAPI
 {
     public class Program
     {
-        public static string LEGISLATION_DATASET = "legislation.json";
-        public static string MEMBERS_DATASET = "members.json";
-
-        public static Func<string, Task<dynamic>> load = async jfname =>
+        static async Task Main(string[] args)
         {
-            if (Uri.IsWellFormedUriString(jfname, UriKind.Absolute))
-                try
-                {
-                    using (var client = new HttpClient())
-                    {
-                        var response = await client.GetAsync(jfname);
-                        response.EnsureSuccessStatusCode();
+            var serviceProvider = CreateAndBuildServiceProvider();
 
-                        var responseBody = await response.Content.ReadAsStringAsync();
-                        return JObject.Parse(responseBody);
-                    }
-                }
-                catch (HttpRequestException e)
-                {
-                    Console.WriteLine("\nException Caught!");
-                    Console.WriteLine("Message :{0} ", e.Message);
-                    return null;
-                }
+            var app = new CommandApp(new DependencyInjectionRegistrar(serviceProvider));
 
-            return JsonConvert.DeserializeObject(new StreamReader(jfname).ReadToEnd());
-        };
+            app.Configure(config =>
+            {
+                config.AddCommand<FilterBillsSponsoredByCommand>("filterBillsSponsoredBy");
+                config.AddCommand<FilterBillsByLastUpdatedCommand>("filterBillsByLastUpdated");
+            });
 
-        private static void Main(string[] args)
-        {
+            await app.RunAsync(args);
         }
 
-        /// <summary>
-        ///     Return bills sponsored by the member with the specified pId
-        /// </summary>
-        /// <param name="pId">The pId value for the member</param>
-        /// <returns>List of bill records</returns>
-        public static async Task<List<dynamic>> filterBillsSponsoredBy(string pId)
+        private static IServiceCollection CreateAndBuildServiceProvider()
         {
-            var legislations = await load(LEGISLATION_DATASET);
-            var members = await load(MEMBERS_DATASET);
+            var serviceCollection = new ServiceCollection();
 
-            var memberHashSet = new HashSet<string>();
-            foreach (var result in members["results"])
-            {
-                string firstName = result["member"]["fullName"];
-                string rpId = result["member"]["pId"];
-                memberHashSet.Add($"{firstName}_{rpId}");
-            }
+            serviceCollection.AddHttpClient<IHttpMeanService, HttpMeanService>();
+            serviceCollection.AddScoped<ILocalFileMeanService, LocalFileMeanService>();
+            serviceCollection.AddScoped<ILoadDataService, LoadDataService>(srv =>
+                new LoadDataService(srv.GetRequiredService<IHttpMeanService>(),
+                    srv.GetRequiredService<ILocalFileMeanService>(),
+                    bool.Parse(ConfigurationManager.AppSettings["useLocalFiles"]),
+                    ConfigurationManager.AppSettings["oireachtasApi"]));
+            serviceCollection.AddScoped<IFilterDataService, FilterDataService>();
 
-            var bills = new List<dynamic>();
+            serviceCollection.AddLogging(loggingBuilder => { loggingBuilder.AddSerilog(dispose: true); });
 
-            foreach (var legislation in legislations["results"])
-            {
-                var sponsors = legislation["bill"]["sponsors"];
-                foreach (var sponsor in sponsors)
-                {
-                    string shownAsName = sponsor["sponsor"]["by"]["showAs"];
-                    if (memberHashSet.TryGetValue($"{shownAsName}_{pId}", out var _))
-                    {
-                        bills.Add(legislation["bill"]);
-                        break;
-                    }
-                }
-            }
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.File("Debug.txt")
+                .CreateLogger();
 
-            return bills;
-        }
-
-        /// <summary>
-        ///     Return bills updated within the specified date range
-        /// </summary>
-        /// <param name="since">The lastUpdated value for the bill should be greater than or equal to this date</param>
-        /// <param name="until">
-        ///     The lastUpdated value for the bill should be less than or equal to this date.If unspecified, until
-        ///     will default to today's date
-        /// </param>
-        /// <returns>List of bill records</returns>
-        public static async Task<List<dynamic>> filterBillsByLastUpdated(DateTime since, DateTime? until)
-        {
-            if (until == null || until == DateTime.MinValue) until = DateTime.UtcNow;
-
-            if (since > until) throw new ArgumentException("Since cannot be greater than until");
-
-            var legislations = await load(LEGISLATION_DATASET);
-
-            var bills = new List<dynamic>();
-
-            foreach (var legislation in legislations["results"])
-            {
-                if (!DateTime.TryParse(legislation["bill"]["lastUpdated"].ToString(), out DateTime lastUpdated))
-                    continue;
-
-                if (lastUpdated >= since && lastUpdated <= until) bills.Add(legislation["bill"]);
-            }
-
-            return bills;
+            return serviceCollection;
         }
     }
 }
