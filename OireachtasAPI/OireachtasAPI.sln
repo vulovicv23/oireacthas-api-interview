@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1145
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OireachtasAPI", "OireachtasAPI\OireachtasAPI.csproj", "{3AEEA5EB-46C8-45BE-A9E8-24181E74F1C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestOireachtasAPI", "TestOireachtasAPI\TestOireachtasAPI.csproj", "{1D9CF6FB-CE0C-4934-9CD7-156054174291}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OireachtasAPIBenchmark", "OireachtasAPIBenchmark\OireachtasAPIBenchmark.csproj", "{179FB1C1-3FEF-4790-9266-CC01075EF5B8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{CD818CB9-4803-4E04-924E-0762D670D643}"
+	ProjectSection(SolutionItems) = preProject
+		..\README.md = ..\README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3AEEA5EB-46C8-45BE-A9E8-24181E74F1C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AEEA5EB-46C8-45BE-A9E8-24181E74F1C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AEEA5EB-46C8-45BE-A9E8-24181E74F1C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AEEA5EB-46C8-45BE-A9E8-24181E74F1C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D9CF6FB-CE0C-4934-9CD7-156054174291}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D9CF6FB-CE0C-4934-9CD7-156054174291}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D9CF6FB-CE0C-4934-9CD7-156054174291}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D9CF6FB-CE0C-4934-9CD7-156054174291}.Release|Any CPU.Build.0 = Release|Any CPU
+		{179FB1C1-3FEF-4790-9266-CC01075EF5B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{179FB1C1-3FEF-4790-9266-CC01075EF5B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{179FB1C1-3FEF-4790-9266-CC01075EF5B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{179FB1C1-3FEF-4790-9266-CC01075EF5B8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {01A13E69-B408-4B9A-A440-16D278F19C8F}
+	EndGlobalSection
+EndGlobal
